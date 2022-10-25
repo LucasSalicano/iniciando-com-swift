@@ -60,7 +60,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     // MARK: - View Life Cycle
     
     override func viewDidLoad() {
-        let botaoAdicionaItem = UIBarButtonItem(title: "Adicionar", style: .plain, target: self, action: #selector(self.adicionarItens))
+        let botaoAdicionaItem = UIBarButtonItem(title: "Adicionar", style: .plain, target: self, action: #selector(adicionarItens))
         
         navigationItem.rightBarButtonItem = botaoAdicionaItem
     }
@@ -94,10 +94,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             return
         }
         
-        let refeicao = Refeicao(nome: nomeDaRefeicao, felicidade: felicidade)
-        
-        print("comi \(refeicao.nome) e fiquei com felicidade: \(refeicao.felicidade)")
-        
+        let refeicao = Refeicao(nome: nomeDaRefeicao, felicidade: felicidade, itens: itens)
         delegate?.adicionar(refeicao)
         
         navigationController?.popViewController(animated: true)

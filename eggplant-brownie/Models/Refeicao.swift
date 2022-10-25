@@ -35,4 +35,20 @@ class Refeicao: NSObject {
         
         return total
     }
+    
+    func detalhes () -> String {
+        var mensagem = "Felicidade: \(felicidade)"
+        
+        for item in itens {
+            print(item.nome)
+            mensagem += ", \(item.nome) - calorias: \(item.calorias)"
+        }
+        print(itens)
+        
+        return mensagem
+    }
+    
+    func addItens(_ itensRefeicao: Item) {
+        itens.append(itensRefeicao)
+    }
 }
