@@ -18,8 +18,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         Item(nome: "Item 1", calorias: 100.0),
         Item(nome: "Item 2", calorias: 130.0)
     ]
+
     
-    @IBOutlet weak var tableViewItens: UITableView!
+    @IBOutlet weak var tableViewItens: UITableView?
     
     var itensSelecionados: [Item] = []
     
@@ -65,9 +66,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         navigationItem.rightBarButtonItem = botaoAdicionaItem
     }
     
+ 
     func adicionar(_ item: Item) {
         itens.append(item)
-        tableViewItens.reloadData()
+        
+        if let tableViewItens = tableViewItens {
+            tableViewItens.reloadData()
+        } else {
+            Alert(controller: self).show(title: "Erro", message: "Não foi possivel atualizar a tabela de itens.")
+        }
     }
     
     
@@ -86,18 +93,28 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     @IBAction func adicionar(_ sender: Any) {
         
-        guard let nomeDaRefeicao = nomeTextField?.text else {
+        guard let refeicao = getRefeicaoFormulario() else {
+            Alert(controller: self).show(title: "Atencao", message: "Erro ao recuperar refeicao do formulario.")
             return
         }
         
-        guard let felicidadeDaRefeicao = felicidadeTextField?.text, let felicidade = Int(felicidadeDaRefeicao) else {
+        if let delegate = delegate {
+            delegate.adicionar(refeicao)
+        } else {
+            Alert(controller: self).show(title: "Atencao", message: "Erro ao recuperar delegate.")
             return
         }
-        
-        let refeicao = Refeicao(nome: nomeDaRefeicao, felicidade: felicidade, itens: itens)
-        delegate?.adicionar(refeicao)
         
         navigationController?.popViewController(animated: true)
+    }
+    
+    func getRefeicaoFormulario() -> Refeicao? {
+        guard let felicidadeDaRefeicao = felicidadeTextField?.text, let felicidade = Int(felicidadeDaRefeicao), let nomeDaRefeicao = nomeTextField?.text else {
+            Alert(controller: self).show(title: "Atencao", message: "Campos dos formulario esta com valores invalidos.")
+            return nil
+        }
+        
+        return Refeicao(nome: nomeDaRefeicao, felicidade: felicidade, itens: itens)
     }
 }
 
