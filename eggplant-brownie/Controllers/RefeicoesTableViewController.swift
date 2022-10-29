@@ -10,29 +10,18 @@ import UIKit
 
 class RefeicoesTableViewController: UITableViewController, AdicionaRefeicaoDelegate {
     
-    var refeicoes: [Refeicao] = []
-    
-    override func viewDidLoad() {
-        guard let caminho = FileManagerHelper().recuperaDiretorio(pastaNome: "refeicao") else { return }
-        
-        do {
-            let dados = try Data(contentsOf: caminho)
-            guard let refeicoesSalvas = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(dados) as? Array<Refeicao> else { return }
-            refeicoes = refeicoesSalvas
-        } catch {
-            print(error.localizedDescription)
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if let refeicoes = RefeicaoDAO().findAll() {
+            return refeicoes.count
         }
         
-    }
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return refeicoes.count
+        return 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let celula = UITableViewCell(style: .default, reuseIdentifier: nil)
-        let refeicao = refeicoes[indexPath.row]
+        let refeicao = RefeicaoDAO().getRefeicaoById(indexPath.row)
         celula.textLabel?.text = refeicao.nome
         
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(mostrarDetalhe(_:)))
@@ -46,28 +35,18 @@ class RefeicoesTableViewController: UITableViewController, AdicionaRefeicaoDeleg
         if gesture.state == .began {
             let celula = gesture.view as! UITableViewCell
             guard let indexPath = tableView.indexPath(for: celula) else {return}
-            let refeicao = refeicoes[indexPath.row]
+            let refeicao = RefeicaoDAO().getRefeicaoById(indexPath.row)
             
             RemoveRefeicaoViewController(controller: self).remover(refeicao, handler:  {
                 alert in
-                self.refeicoes.remove(at: indexPath.row)
+                RefeicaoDAO().remove(indexPath.row)
                 self.tableView.reloadData()
             })
         }
     }
     
     func adicionar(_ refeicao: Refeicao) {
-        refeicoes.append(refeicao)
-        
-        guard let caminho = FileManagerHelper().recuperaDiretorio(pastaNome: "refeicao") else { return }
-        
-        do {
-            let dados = try NSKeyedArchiver.archivedData(withRootObject: refeicoes, requiringSecureCoding: false)
-            try dados.write(to: caminho)
-        } catch {
-            print(error.localizedDescription)
-        }
-        
+        RefeicaoDAO().save(refeicao)
         tableView.reloadData()
     }
     
