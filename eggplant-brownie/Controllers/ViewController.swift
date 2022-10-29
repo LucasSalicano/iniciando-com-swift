@@ -1,11 +1,3 @@
-//
-//  ViewController.swift
-//  eggplant-brownie
-//
-//  Created by Andriu Felipe Coelho on 23/02/19.
-//  Copyright © 2019 Alura. All rights reserved.
-//
-
 import UIKit
 
 protocol AdicionaRefeicaoDelegate {
@@ -14,11 +6,8 @@ protocol AdicionaRefeicaoDelegate {
 
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, AdicionaItensDelegate {
     
-    var itens:  [Item] = [
-        Item(nome: "Item 1", calorias: 100.0),
-        Item(nome: "Item 2", calorias: 130.0)
-    ]
-
+    var itens:  [Item] = []
+    
     
     @IBOutlet weak var tableViewItens: UITableView?
     
@@ -64,9 +53,18 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         let botaoAdicionaItem = UIBarButtonItem(title: "Adicionar", style: .plain, target: self, action: #selector(adicionarItens))
         
         navigationItem.rightBarButtonItem = botaoAdicionaItem
+        
+        do {
+            guard let diretorio = FileManagerHelper().recuperaDiretorio(pastaNome: "itens") else { return }
+            let dados = try Data(contentsOf: diretorio)
+            let itensSalvos = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(dados) as! [Item]
+            itens = itensSalvos
+        } catch {
+            print(error.localizedDescription)
+        }
+        
     }
     
- 
     func adicionar(_ item: Item) {
         itens.append(item)
         
@@ -75,6 +73,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         } else {
             Alert(controller: self).show(title: "Erro", message: "Não foi possivel atualizar a tabela de itens.")
         }
+        
+        do {
+            let dados = try NSKeyedArchiver.archivedData(withRootObject: itens, requiringSecureCoding: false)
+            guard let caminho = FileManagerHelper().recuperaDiretorio(pastaNome: "itens") else { return }
+            try dados.write(to: caminho)
+        } catch {
+            print(error.localizedDescription)
+        }
+        
     }
     
     
@@ -116,5 +123,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         return Refeicao(nome: nomeDaRefeicao, felicidade: felicidade, itens: itens)
     }
+    
 }
 

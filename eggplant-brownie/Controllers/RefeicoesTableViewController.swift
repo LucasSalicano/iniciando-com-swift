@@ -10,11 +10,20 @@ import UIKit
 
 class RefeicoesTableViewController: UITableViewController, AdicionaRefeicaoDelegate {
     
-    var refeicoes = [
-        Refeicao(nome: "Macarrao", felicidade: 4),
-        Refeicao(nome: "Sushi", felicidade: 1),
-        Refeicao(nome: "Pizza", felicidade: 5),
-    ]
+    var refeicoes: [Refeicao] = []
+    
+    override func viewDidLoad() {
+        guard let caminho = FileManagerHelper().recuperaDiretorio(pastaNome: "refeicao") else { return }
+        
+        do {
+            let dados = try Data(contentsOf: caminho)
+            guard let refeicoesSalvas = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(dados) as? Array<Refeicao> else { return }
+            refeicoes = refeicoesSalvas
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+    }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return refeicoes.count
@@ -49,6 +58,16 @@ class RefeicoesTableViewController: UITableViewController, AdicionaRefeicaoDeleg
     
     func adicionar(_ refeicao: Refeicao) {
         refeicoes.append(refeicao)
+        
+        guard let caminho = FileManagerHelper().recuperaDiretorio(pastaNome: "refeicao") else { return }
+        
+        do {
+            let dados = try NSKeyedArchiver.archivedData(withRootObject: refeicoes, requiringSecureCoding: false)
+            try dados.write(to: caminho)
+        } catch {
+            print(error.localizedDescription)
+        }
+        
         tableView.reloadData()
     }
     
